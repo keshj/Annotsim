@@ -1,4 +1,4 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: Annotsim
 Version: 0.1.0
 Summary: A repository for diffusion-based annotation and simulation models.
@@ -15,31 +15,72 @@ Requires-Dist: numpy>=1.21.0
 Requires-Dist: pandas>=1.3.0
 Requires-Dist: matplotlib>=3.4.3
 Requires-Dist: scikit-learn>=0.24.0
-
-# Self-Supervised Anomaly Segmentation via Diffusion Models with Dynamic Transformer UNet (WACV 2024)
-
-This repository contains the implementation of an anomaly detection approach utilizing Denoising Diffusion Probabilistic Models (DDPMs) with simplex noise, developed in PyTorch. The work focuses on leveraging diffusion models for self-supervised anomaly segmentation.
-
-The code was written by [Komal Kumar](https://github.com/MAXNORM8650) and draws inspiration from the following repositories:
-- [Denoising Diffusion Model for Anomaly Detection](https://github.com/Julian-Wyatt/AnoDDPM)
-- [Predictive Convolutional Attentive Block](https://github.com/ristea/sspcab)
-- [Guided Diffusion](https://github.com/openai/guided-diffusion)
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
 
 ---
 
+# Annotsim: Self-Supervised Anomaly Segmentation via Diffusion Models with Dynamic Transformer UNet (WACV 2024) 🚀
+This research paper introduces a novel self-supervised anomaly detection method for image segmentation. It employs a diffusion model utilising a newly developed four-dimensional simplex noise function (Tsimplex) for improved efficiency and sample quality, especially in higher-dimensional and coloured images. The core of the model is a Dynamic Transformer UNet (DTUNet), a modified Vision Transformer architecture designed to handle time and noise image patches as tokens. Extensive experiments across three datasets demonstrate significant performance improvements over existing generative-based anomaly detection methods, particularly in medical imaging. The source code is publicly available.
+
 ## Features
 
-- **Custom Diffusion Models**: Extended UNet with selective denoising for better anomaly segmentation.
-- **Simplex Noise Generator**: Supports 3D/4D noise generation for enhanced applications.
-- **Comprehensive Evaluation**: Includes scripts for precision, recall, and Dice score calculation.
-- **Visualization Tools**: Generates diffusion videos and detection images for better interpretability.
+- **Custom Diffusion Models**: An extended UNet with selective denoising capabilities.
+- **Dynamic Transformer Blocks**: Enhancements for dynamic anomaly segmentation.
+- **Simplex Noise Integration**: Supports 3D/4D noise generation for improved feature diversity.
+- **Comprehensive Evaluation Metrics**: Tools to calculate precision, recall, Dice score, and more.
+- **Visualization Tools**: Generates diffusion videos and detection outputs for interpretability.
 
 ---
 
 ## Example Outputs
 
 ### Diffusion Training Visualization
-![Diffusion Training](assets/diffusion_training_example.png)
+
+#### Distribution Visualization & Histogram Plot
+
+| Distribution Visualization | Histogram Plot |
+|----------------------------|-----------------|
+| ![Distribution Visualization](assets/Timed_simlex_hitogram1.png) | ![Histogram Plot](plotes/Timed_simlex_hitogram1.png) |
+
+#### Qualitative Results
+
+| Qualitative Result 1 | Qualitative Result 2 |
+|----------------------|----------------------|
+| ![Qualitative Results](assets/annointo_v3.jpg) | ![Qualitative Results](assets/anno_introduction2.png) |
+
+#### Octave Visualization
+
+![Octave Visualization](assets/SIMPLEX_TEST_Oct.gif)
+
+#### SSIM Plot
+
+![SSIM Plot](assets/SSIM_plot.pdf)
+
+#### Time Complexity Plots
+
+![Time Complexity Plots](assets/time_complexity_plot.pdf)
+
+#### MRI Translation
+
+![MRI Translation](assets/results/args200/Generation/1000_500_No22.png)
+
+---
+
+### Anomaly Detection Results
+
+![Anomaly Detection](assets/anomaly_detection_example.png)
+
+### Simplex Noise Example
+
+![Simplex Noise](assets/simplex_noise_example.png)
 
 ### Anomaly Detection Results
 ![Anomaly Detection](assets/anomaly_detection_example.png)
@@ -49,23 +90,19 @@ The code was written by [Komal Kumar](https://github.com/MAXNORM8650) and draws 
 
 ---
 
-## Repository Structure
+## Project Structure
 
-### Core Files
-- **`dataset.py`**: Custom dataset loader for training and testing.
-- **`detection.py`**: Handles detection metrics and experimentation.
-- **`diffusion_training.py`**: Implements the training loop for diffusion models.
-- **`evaluation.py`**: Functions for evaluating model performance.
-- **`GaussianDiffusion.py`**: Implements Gaussian architecture for diffusion models.
-- **`helpers.py`**: Utility functions for operations like checkpoint handling.
-- **`simplex.py`**: A simplex noise generator extended for 3D/4D noise.
-- **`UNet.py`**: Implements a custom UNet with selective denoising blocks.
-
-### Key Directories
-- **`test_args/`**: Contains JSON configuration files for testing.
-- **`model/diff-params-ARGS={i}/`**: Checkpoints saved during training.
-- **`diffusion-videos/ARGS={i}/`**: Video outputs generated during training and testing.
-- **`diffusion-training-images/ARGS={i}/`**: Images generated during diffusion training and detection.
+```plaintext
+Annotsim/
+├── src/
+│   ├── models/               # Model architectures (UNet, transformer blocks, etc.)
+│   ├── utils/                # Helper functions (dataset loading, noise generation, etc.)
+│   ├── scripts/              # Training and evaluation scripts
+├── requirements.txt          # Python dependencies
+├── setup.py                  # Installation script
+├── README.md                 # Project documentation
+└── .gitignore                # Ignored files and directories
+```
 
 ---
 
@@ -81,3 +118,79 @@ The code was written by [Komal Kumar](https://github.com/MAXNORM8650) and draws 
    ```bash
    git clone https://github.com/MAXNORM8650/Annotsim.git
    cd Annotsim
+   ```
+
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Install the repository as a package:
+   ```bash
+   pip install -e .
+   ```
+
+---
+
+## Usage
+
+### Train a Diffusion Model
+To train a diffusion model:
+```bash
+python src/scripts/diffusion_training_UVW.py --argN
+```
+Replace `argN` with your desired configuration file from "test_args" file.
+
+### Evaluate a Model
+To evaluate a model:
+```bash
+python src/scripts/detection.py --argN
+```
+
+---
+
+## Datasets
+
+This project uses two publicly available datasets:
+1. **BRATS2021**: A dataset for brain tumor segmentation.
+2. **Pneumonia X-Ray**: A dataset for chest X-ray anomaly detection.
+
+For more details, refer to the datasets' official documentation.
+
+---
+
+## Results
+
+### Diffusion Videos
+Generated videos during training and evaluation are saved in:
+```plaintext
+outputs/diffusion-videos/
+```
+
+### Detection Outputs
+Detection results are saved in:
+```plaintext
+outputs/detection-images/
+```
+
+---
+
+## Contributors
+
+- **Komal Kumar**: [GitHub Profile](https://github.com/MAXNORM8650)
+
+The project imported from:
+- [AnoDDPM](https://github.com/Julian-Wyatt/AnoDDPM)
+- [Predictive Convolutional Attentive Block](https://github.com/ristea/sspcab)
+- [Guided Diffusion](https://github.com/openai/guided-diffusion)
+---
+# Citation
+]
+@InProceedings{Kumar_2025_WACV,
+    author    = {Kumar, Komal and Chakraborty, Snehashis and Mahapatra, Dwarikanath and Bozorgtabar, Behzad and Roy, Sudipta},
+    title     = {Self-Supervised Anomaly Segmentation via Diffusion Models with Dynamic Transformer UNet},
+    booktitle = {Proceedings of the Winter Conference on Applications of Computer Vision (WACV)},
+    month     = {February},
+    year      = {2025},
+    pages     = {7917-7927}
+}

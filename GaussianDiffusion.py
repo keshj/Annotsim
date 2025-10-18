@@ -609,9 +609,9 @@ class GaussianDiffusionModel:
         """
         if estimate_noise == None:
             if self.train:
-                estimate_noise = model((x_t, t, lab))
+                estimate_noise = model((x_t, t, lab))[0]
             else:
-                estimate_noise = model(x_t, t, y = lab)
+                estimate_noise = model(x_t, t, y = lab)[0] ## modified to [0]
 #         print("estimate_noise", estimate_noise.shape)
 #             estimate_noise = model(x_t, t, lab)
         if attn == True:
@@ -777,7 +777,7 @@ class GaussianDiffusionModel:
 
         x_t = self.sample_q(x_0, t, noise)
 #         print("lab = ", lab)
-        estimate_noise = model(x_t, t, y = lab)
+        estimate_noise = model(x_t, t, y = lab)[0] ### modified
         loss = {}
         if self.loss_type == "l1":
             loss["loss"] = mean_flat((estimate_noise - noise).abs()) 
