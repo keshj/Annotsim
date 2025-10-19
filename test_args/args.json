@@ -3,8 +3,8 @@
     256,
     256
   ],
-  "Batch_Size": 32,
-  "EPOCHS": 3000,
+  "Batch_Size": 1,
+  "EPOCHS": 5,
   "T": 1000,
   "base_channels": 128,
   "channels": 1,

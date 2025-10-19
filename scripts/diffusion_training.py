@@ -75,6 +75,7 @@ def train(training_dataset_loader, testing_dataset_loader, args, resume):
                       deconvpatch = False, 
                       use_dec = args["mlps"],
                       PE_type = args["patch_emb"])
+
     elif args['model_name'] == "DHUNet":
         model = DHUNet(img_size = args['img_size'][0],
                       patch_size=args["patch_size"], 
@@ -123,6 +124,7 @@ def train(training_dataset_loader, testing_dataset_loader, args, resume):
         img_channels = args["channels"]
     )    
     diffusion.train = args['dis']
+
     if resume:
         ema = copy.deepcopy(model)
         if args['model_name'] in resume:
