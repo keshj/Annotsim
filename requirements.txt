@@ -1,5 +1,5 @@
 # Repository as an editable package
--e git+https://github.com/MAXNORM8650/Annotsim@c0ed0d2202dc44ea6c6a14c47a51463d8dd84e4c#egg=Annotsim
+# -e git+https://github.com/MAXNORM8650/Annotsim@c0ed0d2202dc44ea6c6a14c47a51463d8dd84e4c#egg=Annotsim
 
 # Core dependencies
 torch==2.5.1

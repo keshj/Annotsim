@@ -1,6 +1,7 @@
 import collections
 import copy
 import sys
+import os
 import time
 from random import seed
 import torch.nn as nn
@@ -9,6 +10,7 @@ import numpy as np
 from matplotlib import animation
 from torch import optim
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from utils import dataset
 import evaluation
 from GaussianDiffusion import GaussianDiffusionModel, get_beta_schedule
