@@ -56,12 +56,24 @@ def defaultdict_from_json(jsonDict):
     dd.update(jsonDict)
     return dd
 
-import os
-import glob
-import torch
+import os, glob, torch
+from collections import defaultdict, OrderedDict
+
+# Allowlist common harmless globals that often appear in checkpoints
+try:
+    torch.serialization.add_safe_globals([
+        defaultdict,          # collections.defaultdict
+        OrderedDict,          # collections.OrderedDict
+        str, list, dict,      # builtins
+        tuple, set, slice,    # builtins
+    ])
+except Exception:
+    # Older PyTorch may not have add_safe_globals; that's fine.
+    pass
+
 
 def load_checkpoint(param, use_checkpoint, device):
-    # normalize param so we don't double-prefix
+    # normalize `param` so we don't double-prefix
     param_str = str(param)
     prefix = "diff-params-ARGS="
     if param_str.startswith(prefix):
@@ -72,6 +84,7 @@ def load_checkpoint(param, use_checkpoint, device):
 
     # Prefer final checkpoint; otherwise fallback to the latest epoch file
     if os.path.exists(final_path):
+        # keep the safe path
         return torch.load(final_path, map_location=device, weights_only=True)
 
     # Try an epoch checkpoint if final is missing
