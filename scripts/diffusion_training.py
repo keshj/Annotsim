@@ -27,6 +27,7 @@ from src.models.UModels.UDHVT import UDHVT
 from src.models.UModels.DiT import DiT_models, DiT_Anomaly
 torch.cuda.empty_cache()
 ROOT_DIR = "./"
+from torch import amp
 
 def cycle(iterable):
     while True:
@@ -45,16 +46,19 @@ def train(training_dataset_loader, testing_dataset_loader, args, resume):
 
     if args["channels"] != "":
         in_channels = args["channels"]
+
     if args['model_name'] == "CUViT":
             model = CUViT(img_size = args['img_size'][0], patch_size=4, in_chans=args["channels"], embed_dim = args['base_channels'],
                           depth=12, num_heads=args["num_heads"], mlp_ratio=4., qkv_bias=False, qk_scale=None, norm_layer=nn.LayerNorm, 
                           mlp_time_embed=False, num_classes=args["cls_cond"],
                           use_checkpoint=False, conv=True, skip=True)
+            
     elif args['model_name'] == "UViT":
         model = UViT(img_size = args['img_size'][0], patch_size=16, in_chans=args["channels"], embed_dim = args['embed_dim'],
                      depth=12, num_heads=args["num_heads"], mlp_ratio=4., qkv_bias=False, qk_scale=None, norm_layer=nn.LayerNorm, 
                      mlp_time_embed=False, num_classes=args["cls_cond"],
                      use_checkpoint=False, conv=True, skip=True)
+        
     elif args['model_name'] == "UDHVT":
         model = UDHVT(img_size = args['img_size'][0],
                       patch_size=args["patch_size"], 
@@ -141,17 +145,36 @@ def train(training_dataset_loader, testing_dataset_loader, args, resume):
     tqdm_epoch = range(start_epoch, args['EPOCHS'] + 1)
     model.to(device)
     ema.to(device)
+    ### modified for amp
+    torch.backends.cuda.matmul.allow_tf32 = True
+    torch.backends.cudnn.allow_tf32 = True
+    try:
+        torch.set_float32_matmul_precision('high')
+    except:
+        pass
+
     model.train()
     ema.eval()
-    optimiser = optim.AdamW(model.parameters(), lr=args['lr'], weight_decay=args['weight_decay'], betas=(0.9, 0.999))
+    # optimiser = optim.AdamW(model.parameters(), lr=args['lr'], weight_decay=args['weight_decay'], betas=(0.9, 0.999))
+    ### modified
+    optimiser = optim.AdamW(
+        model.parameters(),
+        lr=args['lr'], weight_decay=args['weight_decay'],
+        betas=(0.9, 0.999)
+    )
+    
     if resume:
         optimiser.load_state_dict(resume["optimizer_state_dict"])
     del resume
+
     start_time = time.time()
     losses = []
     vlb = collections.deque([], maxlen=10)
 #     iters = range(100 // args['Batch_Size']) if args["dataset"].lower() != "cifar" else range(1000)
     iters = range(200)
+    ### modified for amp
+    use_amp = torch.cuda.is_available()
+    scaler = amp.GradScaler('cuda', enabled=use_amp)
 
     # dataset loop
     for epoch in tqdm(tqdm_epoch):
@@ -166,22 +189,36 @@ def train(training_dataset_loader, testing_dataset_loader, args, resume):
             else:
                 x = data["image"]
                 if args["cls_cond"] is not None:
-                    lab = data["label"]
-                    lab = lab.to(device)
+                    lab = data["label"].to(device, non_blocking=True)
+                    # lab = data["label"]
+                    # lab = lab.to(device)
                 else:
                     lab = args["cls_cond"]
-                x = x.to(device)
+                x = x.to(device, non_blocking=True)
+                lab = lab.to(device, non_blocking=True) if args["cls_cond"] is not None else args["cls_cond"]
 #             print(x.shape)
 #             print(lab)
 #             print(x.shape)
             x = x.reshape(-1, in_channels, *args["img_size"])
 #             print("x.device", x.device)
-            loss, estimates, _ = diffusion.p_loss(model, x, lab, args)
+
+
+            #loss, estimates, _ = diffusion.p_loss(model, x, lab, args)
+            with amp.autocast('cuda', dtype=torch.float16, enabled=use_amp):
+                loss, estimates, _ = diffusion.p_loss(model, x, lab, args)
+
             noisy, est = estimates[1], estimates[2]
-            optimiser.zero_grad()
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
-            optimiser.step()
+            # optimiser.zero_grad()
+            # loss.backward()
+            # torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
+            # optimiser.step()
+
+            optimiser.zero_grad(set_to_none=True)
+            scaler.scale(loss).backward()
+            scaler.unscale_(optimiser)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            scaler.step(optimiser)
+            scaler.update()
 
             update_ema_params(ema, model)
             mean_loss.append(loss.data.cpu())
@@ -194,7 +231,7 @@ def train(training_dataset_loader, testing_dataset_loader, args, resume):
                         )
                 
         losses.append(np.mean(mean_loss))
-        if epoch % 200 == 0:
+        if epoch % 200 == 0 and epoch > 0:
             time_taken = time.time() - start_time
             remaining_epochs = args['EPOCHS'] - epoch
             time_per_epoch = time_taken / (epoch + 1 - start_epoch)
@@ -293,7 +330,7 @@ def training_outputs(diffusion, x, lab, est, noisy, epoch, row_size, ema, args, 
     except OSError:
         pass
     if save_imgs:
-        if epoch % 100 == 0:
+        if epoch % 20 == 0:
             # for a given t, output x_0, & prediction of x_(t-1), and x_0
             noise = torch.rand_like(x)
             t = torch.randint(0, diffusion.num_timesteps, (x.shape[0],), device=x.device)

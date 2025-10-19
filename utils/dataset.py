@@ -420,7 +420,11 @@ def init_dataset_loader(mri_dataset, args, shuffle=True):
     dataset_loader = cycle(
             torch.utils.data.DataLoader(
                     mri_dataset,
-                    batch_size=args['Batch_Size'], shuffle=shuffle)
+                    batch_size=args['Batch_Size'], shuffle=shuffle,
+                    num_workers=8,
+                    pin_memory=True,
+                    prefetch_factor=4,
+                    )
             )
 
     return iter(dataset_loader)
