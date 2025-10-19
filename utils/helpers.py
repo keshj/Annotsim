@@ -56,27 +56,36 @@ def defaultdict_from_json(jsonDict):
     dd.update(jsonDict)
     return dd
 
+import os
+import glob
+import torch
 
 def load_checkpoint(param, use_checkpoint, device):
-    """
-    loads the most recent (non-corrupted) checkpoint or the final model
-    :param param: args number
-    :param use_checkpoint: checkpointed or final model
-    :return:
-    """
-    if not use_checkpoint:
-        return torch.load(f'./model/diff-params-ARGS={param}/params-final.pt', map_location=device)
-    else:
-        checkpoints = os.listdir(f'./model/diff-params-ARGS={param}/checkpoint')
-        checkpoints.sort(reverse=True)
-        for i in checkpoints:
-            try:
-                file_dir = f"./model/diff-params-ARGS={param}/checkpoint/{i}"
-                loaded_model = torch.load(file_dir, map_location=device)
-                break
-            except RuntimeError:
-                continue
-        return loaded_model
+    # normalize param so we don't double-prefix
+    param_str = str(param)
+    prefix = "diff-params-ARGS="
+    if param_str.startswith(prefix):
+        param_str = param_str[len(prefix):]
+
+    base_dir = f'./model/diff-params-ARGS={param_str}'
+    final_path = os.path.join(base_dir, 'params-final.pt')
+
+    # Prefer final checkpoint; otherwise fallback to the latest epoch file
+    if os.path.exists(final_path):
+        return torch.load(final_path, map_location=device, weights_only=True)
+
+    # Try an epoch checkpoint if final is missing
+    cand = sorted(glob.glob(os.path.join(base_dir, 'diff_epoch=*.pt')))
+    if cand:
+        latest = cand[-1]
+        print(f"[load_checkpoint] Final not found. Using latest epoch: {os.path.basename(latest)}")
+        return torch.load(latest, map_location=device, weights_only=True)
+
+    raise FileNotFoundError(
+        f"Could not find checkpoint in {base_dir}. "
+        f"Expected {final_path} or diff_epoch=*.pt"
+    )
+
 
 
 def load_parameters(device, argN = None):
