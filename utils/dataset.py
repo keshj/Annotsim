@@ -791,6 +791,7 @@ class MRIDataset(Dataset):
                 img = nib.load(img_name)
                 image = img.get_fdata()                
                 mask = torch.zeros(image.shape)
+                
             image_mean = np.mean(image)
             image_std = np.std(image)
             img_range = (image_mean - 1 * image_std, image_mean + 2 * image_std)
@@ -808,9 +809,9 @@ class MRIDataset(Dataset):
         else:
             slice_idx = 120
         
-        image = torch.from_numpy(image[:, :, slice_idx:slice_idx + 1]).float().reshape(self.shp)
+        image = torch.from_numpy(image[ :, :, slice_idx:slice_idx + 1]).float().reshape(self.shp)
 #         .reshape(self.shp).astype(np.float32)
-        mask = mask[:, :, slice_idx:slice_idx + 1].float().reshape(self.shp)
+        mask = mask[:,:,slice_idx:slice_idx + 1].float().reshape(self.shp)
         #mask = torch.from_numpy(mask[:, :, slice_idx:slice_idx + 1]).float().reshape(self.shp)
 #         .reshape(self.shp).astype(np.float32)  
         label = 1 if mask.max()>0 else 0
@@ -820,6 +821,86 @@ class MRIDataset(Dataset):
         sample = {'image': image, "filenames": self.filenames[idx], "mask": mask, "label" : label}
         return sample
     
+# class MRIDataset(Dataset):
+#     def __init__(self, ROOT_DIR, transform=False, img_size=(32, 32), random_slice=False, is_anno=False, is_train=True):
+#         self.is_anno = is_anno
+#         self.transform = transforms.Compose(
+#             [transforms.ToPILImage(),
+#              transforms.CenterCrop(155),
+#              transforms.Resize(img_size, transforms.InterpolationMode.BILINEAR),
+#              transforms.ToTensor()
+#             ]
+#         ) if transform else False
+
+#         split_ratio = 0.5
+#         train_test_filenames = os.listdir(ROOT_DIR)
+#         random.shuffle(train_test_filenames)
+#         split_index = int(split_ratio * len(train_test_filenames))
+#         training_set = train_test_filenames[:split_index]
+#         testing_set  = train_test_filenames[split_index:]
+
+#         self.filenames = training_set if is_train else testing_set
+#         if ".DS_Store" in self.filenames:
+#             self.filenames.remove(".DS_Store")
+#         self.ROOT_DIR = ROOT_DIR
+#         self.random_slice = random_slice
+#         self.shp = (240, 240) if is_anno else (256, 256)
+
+#     def __len__(self):
+#         return len(self.filenames)
+
+#     def __getitem__(self, idx):
+#         if torch.is_tensor(idx):
+#             idx = idx.tolist()
+
+#         npy_path = os.path.join(self.ROOT_DIR, self.filenames[idx], f"{self.filenames[idx]}.npy")
+#         if os.path.exists(npy_path):
+#             # WARNING: cached .npy might be in non-RAS axis order.
+#             image = np.load(npy_path)
+
+#             # If your cached volumes were saved as (Z, X, Y) or similar, standardize to (X, Y, Z).
+#             # Example for (Z, X, Y) -> (X, Y, Z):
+#             if image.shape[0] in (150, 192, 240) and image.shape[2] in (240, 256) and image.shape[1] in (240, 256):
+#                 # guess it's (Z, X, Y) -> moveaxis(0->2)
+#                 image = np.moveaxis(image, 0, 2)
+#         else:
+#             if self.is_anno:
+#                 img_name  = os.path.join(self.ROOT_DIR, self.filenames[idx], f"{self.filenames[idx]}_flair.nii.gz")
+#                 seg_name  = os.path.join(self.ROOT_DIR, self.filenames[idx], f"{self.filenames[idx]}_seg.nii.gz")
+#                 img = nib.load(img_name); img = nib.as_closest_canonical(img)  # <- reorient to RAS
+#                 msk = nib.load(seg_name); msk = nib.as_closest_canonical(msk)  # <- reorient to RAS
+#                 image = img.get_fdata()      # (X, Y, Z)
+#                 mask  = msk.get_fdata()      # (X, Y, Z)  numpy
+#             else:
+#                 img_name = os.path.join(self.ROOT_DIR, self.filenames[idx], f"sub-{self.filenames[idx]}_ses-NFB3_T1w.nii.gz")
+#                 img = nib.load(img_name); img = nib.as_closest_canonical(img)   # <- reorient
+#                 image = img.get_fdata()                                        # (X, Y, Z)
+#                 mask  = np.zeros_like(image)                                   # numpy, not torch
+
+#             # intensity normalize
+#             image_mean = np.mean(image); image_std = np.std(image)
+#             lo, hi = (image_mean - 1*image_std, image_mean + 2*image_std)
+#             image = np.clip(image, lo, hi) / (hi - lo + 1e-8)
+
+#         # choose axial slice index (Z axis)
+#         slice_idx = randint(40, 100) if self.random_slice else 120
+#         slice_idx = max(0, min(slice_idx, image.shape[2]-1))  # clamp to valid range
+
+#         # --- AXIAL SLICES ---
+#         img2d  = image[:, :, slice_idx]        # axial (top-down)
+#         msk2d  = mask[:, :, slice_idx] if self.is_anno else np.zeros(self.shp, dtype=img2d.dtype)
+
+#         # to torch with target shape
+#         img_t  = torch.from_numpy(img2d).float().reshape(self.shp)
+#         msk_t  = torch.from_numpy(msk2d).float().reshape(self.shp)
+
+#         if self.transform:
+#             img_t = self.transform(img_t)
+#             msk_t = self.transform(msk_t)
+
+#         label = 1 if msk_t.max() > 0 else 0
+#         return {'image': img_t, 'filenames': self.filenames[idx], 'mask': msk_t, 'label': label}
+
 class MatTDataset(torch.utils.data.Dataset):
     def __init__(self, directory, transform=None, img_size = 256):
         

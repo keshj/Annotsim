@@ -1,0 +1,72 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+
+
+
+        {
+            "name": "Train: args by number (e.g., 31 -> args31.json)",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/diffusion_training.py ",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "justMyCode": true,
+            "args": [
+                "${input:argNumber}"
+            ]
+        },
+        {
+            "name": "Train: args by filename (e.g., args31.json)",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/diffusion_training.py" "args.json",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "justMyCode": true,
+            "args": [
+                "${input:argFile}"
+            ]
+        },
+        {
+            "name": "Resume RECENT: by number",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/diffusion_training.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "justMyCode": true,
+            "args": [
+                "RESUME_RECENT",
+                "${input:argNumber}"
+            ]
+        },
+        {
+            "name": "Resume FINAL: by number",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/diffusion_training.py args.json",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "justMyCode": true,
+            "args": [
+                "RESUME_FINAL",
+                "${input:argNumber}"
+            ]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "argNumber",
+            "type": "promptString",
+            "description": "Enter args number (e.g., 31 -> uses test_args/args.json)",
+            "default": "31"
+        },
+        {
+            "id": "argFile",
+            "type": "promptString",
+            "description": "Enter args filename (e.g., args.json)",
+            "default": "args.json"
+        }
+    ]
+}
