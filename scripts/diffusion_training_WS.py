@@ -96,7 +96,7 @@ def train(training_dataset_loader, testing_dataset_loader, args, resume):
                 y = data["labels"]
                 x = x.to(device)
             x = x.reshape(1, in_channels, *args["img_size"])
-            loss, estimates = diffusion.p_loss(model, x, y = y, args)
+            loss, estimates = diffusion.p_loss(model, x, y = y, args = args)
             noisy, est = estimates[1], estimates[2]
             optimiser.zero_grad()
             loss.backward()
