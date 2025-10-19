@@ -15,20 +15,17 @@ Requires-Dist: numpy>=1.21.0
 Requires-Dist: pandas>=1.3.0
 Requires-Dist: matplotlib>=3.4.3
 Requires-Dist: scikit-learn>=0.24.0
-Dynamic: author
-Dynamic: author-email
-Dynamic: classifier
-Dynamic: description
-Dynamic: description-content-type
-Dynamic: home-page
-Dynamic: requires-dist
-Dynamic: requires-python
-Dynamic: summary
+
+# Self-Supervised Anomaly Segmentation via Diffusion Models with Dynamic Transformer UNet (WACV 2024)
+
+This repository contains the implementation of an anomaly detection approach utilizing Denoising Diffusion Probabilistic Models (DDPMs) with simplex noise, developed in PyTorch. The work focuses on leveraging diffusion models for self-supervised anomaly segmentation.
+
+The code was written by [Komal Kumar](https://github.com/MAXNORM8650) and draws inspiration from the following repositories:
+- [Denoising Diffusion Model for Anomaly Detection](https://github.com/Julian-Wyatt/AnoDDPM)
+- [Predictive Convolutional Attentive Block](https://github.com/ristea/sspcab)
+- [Guided Diffusion](https://github.com/openai/guided-diffusion)
 
 ---
-
-# Annotsim: Self-Supervised Anomaly Segmentation via Diffusion Models with Dynamic Transformer UNet (WACV 2024) ðŸš€
-This research paper introduces a novel self-supervised anomaly detection method for image segmentation. It employs a diffusion model utilising a newly developed four-dimensional simplex noise function (Tsimplex) for improved efficiency and sample quality, especially in higher-dimensional and coloured images. The core of the model is a Dynamic Transformer UNet (DTUNet), a modified Vision Transformer architecture designed to handle time and noise image patches as tokens. Extensive experiments across three datasets demonstrate significant performance improvements over existing generative-based anomaly detection methods, particularly in medical imaging. The source code is publicly available.
 
 ## Features
 
@@ -90,19 +87,23 @@ This research paper introduces a novel self-supervised anomaly detection method 
 
 ---
 
-## Project Structure
+## Repository Structure
 
-```plaintext
-Annotsim/
-â”œâ”€â”€ src/
-â”‚   â”œâ”€â”€ models/               # Model architectures (UNet, transformer blocks, etc.)
-â”‚   â”œâ”€â”€ utils/                # Helper functions (dataset loading, noise generation, etc.)
-â”‚   â”œâ”€â”€ scripts/              # Training and evaluation scripts
-â”œâ”€â”€ requirements.txt          # Python dependencies
-â”œâ”€â”€ setup.py                  # Installation script
-â”œâ”€â”€ README.md                 # Project documentation
-â””â”€â”€ .gitignore                # Ignored files and directories
-```
+### Core Files
+- **`dataset.py`**: Custom dataset loader for training and testing.
+- **`detection.py`**: Handles detection metrics and experimentation.
+- **`diffusion_training.py`**: Implements the training loop for diffusion models.
+- **`evaluation.py`**: Functions for evaluating model performance.
+- **`GaussianDiffusion.py`**: Implements Gaussian architecture for diffusion models.
+- **`helpers.py`**: Utility functions for operations like checkpoint handling.
+- **`simplex.py`**: A simplex noise generator extended for 3D/4D noise.
+- **`UNet.py`**: Implements a custom UNet with selective denoising blocks.
+
+### Key Directories
+- **`test_args/`**: Contains JSON configuration files for testing.
+- **`model/diff-params-ARGS={i}/`**: Checkpoints saved during training.
+- **`diffusion-videos/ARGS={i}/`**: Video outputs generated during training and testing.
+- **`diffusion-training-images/ARGS={i}/`**: Images generated during diffusion training and detection.
 
 ---
 

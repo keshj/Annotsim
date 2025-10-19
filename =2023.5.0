@@ -1,0 +1,12 @@
+Collecting fsspec
+  Downloading fsspec-2025.9.0-py3-none-any.whl.metadata (10 kB)
+Collecting tqdm
+  Using cached tqdm-4.67.1-py3-none-any.whl.metadata (57 kB)
+Collecting pytz
+  Downloading pytz-2025.2-py2.py3-none-any.whl.metadata (22 kB)
+Downloading fsspec-2025.9.0-py3-none-any.whl (199 kB)
+Using cached tqdm-4.67.1-py3-none-any.whl (78 kB)
+Downloading pytz-2025.2-py2.py3-none-any.whl (509 kB)
+Installing collected packages: pytz, tqdm, fsspec
+
+Successfully installed fsspec-2025.9.0 pytz-2025.2 tqdm-4.67.1

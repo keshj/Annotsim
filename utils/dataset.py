@@ -539,7 +539,6 @@ class DAGM(Dataset):
 
         return sample
 
-
 class MVTec(Dataset):
     def __init__(self, dir, anomalous=False, img_size=(256, 256), rgb=True, random_crop=False, include_good=False):
         
@@ -811,7 +810,8 @@ class MRIDataset(Dataset):
         
         image = torch.from_numpy(image[:, :, slice_idx:slice_idx + 1]).float().reshape(self.shp)
 #         .reshape(self.shp).astype(np.float32)
-        mask = torch.from_numpy(mask[:, :, slice_idx:slice_idx + 1]).float().reshape(self.shp)
+        mask = mask[:, :, slice_idx:slice_idx + 1].float().reshape(self.shp)
+        #mask = torch.from_numpy(mask[:, :, slice_idx:slice_idx + 1]).float().reshape(self.shp)
 #         .reshape(self.shp).astype(np.float32)  
         label = 1 if mask.max()>0 else 0
         if self.transform:
@@ -819,6 +819,7 @@ class MRIDataset(Dataset):
             mask = self.transform(mask)
         sample = {'image': image, "filenames": self.filenames[idx], "mask": mask, "label" : label}
         return sample
+    
 class MatTDataset(torch.utils.data.Dataset):
     def __init__(self, directory, transform=None, img_size = 256):
         
@@ -913,7 +914,6 @@ class HnABRATS(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.filenames)
 
-
 class BRATSDataset(torch.utils.data.Dataset):
     def __init__(self, directory , test_flag=False):
         '''
@@ -995,8 +995,6 @@ class BRATSDataset(torch.utils.data.Dataset):
 
     def __len__(self):
         return len(self.database)
-
-
 
 class AnomalousMRIDataset(Dataset):
     """Anomalous MRI dataset."""
